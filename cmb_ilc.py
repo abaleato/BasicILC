@@ -164,14 +164,14 @@ class CMBILC(object):
       for i in range(self.nNu):
          for j in range(self.nNu):
             c[i,j] = self.cmb[i,j].ftotalTT(l)
-            c[i,j] /= self.cmb[0,0].freqDpdceTSZ(self.Nu[i]) * self.cmb[0,0].freqDpdceTSZ(self.Nu[j])
+            c[i,j] /= self.cmb[0,0].tszFreqDpdceT(self.Nu[i]) * self.cmb[0,0].tszFreqDpdceT(self.Nu[j])
       # invert matrix
       cInv = np.linalg.inv(c)
       # generate the weights
       w = np.zeros(self.nNu)
       for i in range(self.nNu):
          w[i] = np.sum(cInv[i,:]) / np.sum(cInv)
-         w[i] /= self.cmb[0,0].freqDpdceTSZ(self.Nu[i])
+         w[i] /= self.cmb[0,0].tszFreqDpdceT(self.Nu[i])
       return w
 
 
@@ -205,14 +205,14 @@ class CMBILC(object):
       # individual channels
       for i in range(self.nNu):
          cl = np.array(map(self.cmb[i,i].ftotalTT, L))
-         cl /= self.cmb[0,0].freqDpdceTSZ(self.Nu[i])**2
+         cl /= self.cmb[0,0].tszFreqDpdceT(self.Nu[i])**2
          ax.plot(L, factor * cl, '--', label=str(np.int(self.Nu[i]/1.e9))+' GHz')
       #
       # ILC
       ax.plot(L, factor * powerIlcTsz, 'k', label=r'ILC')
       # tSZ
       cl = np.array(map(self.cmb[0,0].ftSZ, L))
-      cl /= self.cmb[0,0].freqDpdceTSZ(self.Nu[0])**2
+      cl /= self.cmb[0,0].tszFreqDpdceT(self.Nu[0])**2
       ax.plot(L, factor * cl, 'grey', label=r'$y$')
       #
       ax.legend(loc=3, fontsize='x-small', labelspacing=0.1)
@@ -230,7 +230,7 @@ class CMBILC(object):
       # individual channels
       for i in range(self.nNu):
          cl = np.array(map(self.cmb[i,i].ftotalTT, L))
-         cl /= self.cmb[0,0].freqDpdceTSZ(self.Nu[i])**2
+         cl /= self.cmb[0,0].tszFreqDpdceT(self.Nu[i])**2
          ax.plot(L, cl / powerIlcTsz, '--', label=str(np.int(self.Nu[i]/1.e9))+' GHz')
       #
       # ILC
@@ -263,12 +263,12 @@ class CMBILC(object):
       for i in range(self.nNu):
          for j in range(self.nNu):
             c[i,j] = self.cmb[i,j].flensedTT(l) + self.cmb[i,j].fkSZ(l) + self.cmb[i,j].fradioPoisson(l) + self.cmb[i,j].fdetectorNoise(l) + self.cmb[i,j].fCIB(l)
-            c[i,j] /= self.cmb[0,0].freqDpdceTSZ(self.Nu[i]) * self.cmb[0,0].freqDpdceTSZ(self.Nu[j])
+            c[i,j] /= self.cmb[0,0].tszFreqDpdceT(self.Nu[i]) * self.cmb[0,0].tszFreqDpdceT(self.Nu[j])
       # invert matrix
       cInv = np.linalg.inv(c)
       # freq dpdce of the CIB to be nulled
-      f = np.array(map(self.cmb[0,0].freqDpdceCIB, self.Nu))
-      f /= np.array(map(self.cmb[0,0].freqDpdceTSZ, self.Nu))
+      f = np.array(map(self.cmb[0,0].cibPoissonFreqDpdceT, self.Nu))
+      f /= np.array(map(self.cmb[0,0].tszFreqDpdceT, self.Nu))
       # useful numbers
       S0 = np.sum(cInv)
       S1 = np.sum(np.dot(cInv, f))
@@ -278,7 +278,7 @@ class CMBILC(object):
       # generate the weights
       w = cInv.dot(S2*one - S1*f)
       w /= S0 * S2 - S1**2
-      w /= np.array(map(self.cmb[0,0].freqDpdceTSZ, self.Nu))
+      w /= np.array(map(self.cmb[0,0].tszFreqDpdceT, self.Nu))
       return w
 
 
@@ -312,14 +312,14 @@ class CMBILC(object):
       # individual channels
       for i in range(self.nNu):
          cl = np.array(map(self.cmb[i,i].ftotalTT, L))
-         cl /= self.cmb[0,0].freqDpdceTSZ(self.Nu[i])**2
+         cl /= self.cmb[0,0].tszFreqDpdceT(self.Nu[i])**2
          ax.plot(L, factor * cl, '--', label=str(np.int(self.Nu[i]/1.e9))+' GHz')
       #
       # constrained ILC
       ax.plot(L, factor * powerConstrainedIlcTszNoCib, 'k', label=r'ILC')
       # tSZ
       cl = np.array(map(self.cmb[0,0].ftSZ, L))
-      cl /= self.cmb[0,0].freqDpdceTSZ(self.Nu[0])**2
+      cl /= self.cmb[0,0].tszFreqDpdceT(self.Nu[0])**2
       ax.plot(L, factor * cl, 'grey', label=r'$y$')
       #
       ax.legend(loc=3, fontsize='x-small', labelspacing=0.1)
@@ -339,7 +339,7 @@ class CMBILC(object):
       # individual channels
       for i in range(self.nNu):
          cl = np.array(map(self.cmb[i,i].ftotalTT, L))
-         cl /= self.cmb[0,0].freqDpdceTSZ(self.Nu[i])**2
+         cl /= self.cmb[0,0].tszFreqDpdceT(self.Nu[i])**2
          ax.plot(L, cl / powerConstrainedIlcTszNoCib, '--', label=str(np.int(self.Nu[i]/1.e9))+' GHz')
       #
       # ILC
