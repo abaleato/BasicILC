@@ -376,7 +376,7 @@ class CMB(object):
       # freq dpdce such that dT = (freq dpdce) * 2.*y
       result *= self.Tcmb
       # freq dpdce such that dI = (freq dpdce) * 2.*y
-      result *= self.blackbody(nu, self.Tcmb)
+      result *= self.dBdT(nu, self.Tcmb)
       return result
 
    def cibPoissonFreqDpdceInt(self, nu):
@@ -702,6 +702,29 @@ class CMB(object):
       result = 1./np.sqrt(result)
       return result
 
+
+   ##################################################################################
+   ##################################################################################
+
+   def beamSolidAngle(self, fwhm):
+      ''' Computes the beam solid angle [sr]
+      given a Gaussian beam of the requested fwhm [arcmin].
+      '''
+      fwhm *= np.pi / (180.*60.) # convert to [rad]
+      sigma = fwhm / np.sqrt(8.*np.log(2.))
+      def integrand(r):
+         result = np.exp(-0.5*r**2/sigma**2)
+         result *= 2.*np.pi*r
+         return result
+      return integrate.quad(integrand, 0., 10.*sigma, epsabs=0., epsrel=1.e-3)[0]
+         
+   def fwhmFromSolidAngle(self, solidAngle):
+      '''Given a beam solid angle [sr],
+      compute the fwhm [arcmin] of the Gaussian beam
+      which has this solid angle.
+      '''
+      f = lambda fwhm: self.beamSolidAngle(fwhm) - solidAngle
+      return optimize.brentq(f , 1.e-3, 1.e3)
 
 
    ##################################################################################
