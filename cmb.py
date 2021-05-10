@@ -364,7 +364,8 @@ class CMB(object):
       '''Intensity units ([W/Hz/m^2/sr] or [Jy/sr])
       arbitrary normalization
       '''
-      return self.blackbody(nu, self.Tcmb)
+#      return self.blackbody(nu, self.Tcmb)
+      return self.dBdT(nu, self.Tcmb)
 
    def tszFreqDpdceInt(self, nu):
       '''Intensity units ([W/Hz/m^2/sr] or [Jy/sr])
