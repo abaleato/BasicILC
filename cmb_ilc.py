@@ -33,7 +33,7 @@ class CMBILC(object):
       self.cmb = np.empty((self.nNu, self.nNu), dtype=object)
       for i in range(self.nNu):
          for j in range(self.nNu):
-            beam = np.sqrt((self.Beam[i**2] + self.Beam[j]**2) / 2.)
+            beam = np.sqrt((self.Beam[i]**2 + self.Beam[j]**2) / 2.)
             if i==j:
                noise = self.Noise[i]
             else:
