@@ -24,7 +24,7 @@ class CMBILC(object):
       self.Noise = Noise
       self.cl = cl
       #
-      self.lMin = 10.
+      self.lMin = 2.
       self.lMaxT = 1.e4
       self.lMaxP = 1.e4
 
@@ -38,7 +38,7 @@ class CMBILC(object):
                noise = self.Noise[i]
             else:
                noise = 0.
-            self.cmb[i,j] = CMB(beam=beam, noise=noise, nu1=self.Nu[i], nu2=self.Nu[j], lMin=self.lMin, lMaxT=self.lMaxT, lMaxP=self.lMaxP, fg=True, atm=False, name=None)
+            self.cmb[i,j] = CMB(beam=beam, noise=noise, nu1=self.Nu[i], nu2=self.Nu[j], lMin=self.lMin, lMaxT=self.lMaxT, lMaxP=self.lMaxP, fg=True, atm=True, name=None)
 
 
 
@@ -94,6 +94,9 @@ class CMBILC(object):
       #
       ax.legend(loc=1, fontsize='x-small', labelspacing=0.1)
       ax.set_xscale('log', nonposx='clip')
+      plt.ylabel(r'$w^{i}_l$')
+      plt.xlabel(r'$l$')
+      plt.title(r'Standard ILC; Temperature')
       plt.show()
 
 

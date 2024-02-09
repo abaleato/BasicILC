@@ -6,9 +6,9 @@ from cmb_ilc import *
 ##################################################################################
 
 # Specifications
-Nu = np.array([90.e9, 150.e9])   # [Hz]
-Beam = np.array([1.4, 1.4])   # [arcmin]
-Noise = np.array([14., 20.])  # [muK*arcmin]
+Nu = np.array([27.e9, 39.e9, 93.e9, 145.e9, 225.e9, 280.e9])   # [Hz]
+Beam = np.array([7.4, 5.1, 2.2, 1.4, 1.0, 0.9])   # [arcmin]
+Noise = np.array([52., 27., 5.8, 6.3, 15., 37.])  # [muK*arcmin]
 
 
 

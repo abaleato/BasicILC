@@ -11,7 +11,7 @@ class CMB(object):
    def __str__(self):
       return self.name
    
-   def __init__(self, beam=1., noise=1., nu1=143.e9, nu2=143.e9, lMin=30., lMaxT=3.e3, lMaxP=5.e3, fg=True, atm=False, name=None):
+   def __init__(self, beam=1., noise=1., nu1=143.e9, nu2=143.e9, lMin=30., lMaxT=3.e3, lMaxP=5.e3, fg=True, atm=False, name=None, data_dir='/Users/antonbaleatolizancos/Software/BasicILC'):
    
       # name
       self.name = "cmb_beam"+str(round(beam, 3))+"_noise"+str(round(noise, 3))+ "_nu"+str(np.int(nu1/1.e9))+"_nu"+str(np.int(nu2/1.e9))+"_lmin"+str(np.int(lMin))+"_lmaxT"+str(int(lMaxT))+"_lmaxP"+str(int(lMaxP))
@@ -30,6 +30,9 @@ class CMB(object):
       self.lMin = lMin
       self.lMaxT = lMaxT
       self.lMaxP = lMaxP
+
+      # By ABL
+      self.data_dir = data_dir
       
       ##################################################################################
       
@@ -52,7 +55,7 @@ class CMB(object):
       ##################################################################################
       # interpolate the frequency dependencies, for speed
       
-      self.pathFreqDpdces = "./input/cmb/freq_dpdces.txt"
+      self.pathFreqDpdces = self.data_dir+"/input/cmb/freq_dpdces.txt"
       if True:#not os.path.exists(self.pathFreqDpdces):
          self.saveFreqDpdce()
       self.loadFreqDpdce()
@@ -63,7 +66,7 @@ class CMB(object):
       # unlensed primary T, E, B
 
       # read the Dl, and convert to Cl
-      data = np.genfromtxt("./input/universe_Planck15/camb/lenspotentialCls.dat")
+      data = np.genfromtxt(self.data_dir+"/input/universe_Planck15/camb/lenspotentialCls.dat")
       factor = self.fdl_to_cl(data[:,0])
       data[:,1] *= factor
       data[:,2] *= factor
@@ -81,7 +84,7 @@ class CMB(object):
       # lensed primary T, E, B
 
       # read the Dl, and convert to Cl
-      data = np.genfromtxt("./input/universe_Planck15/camb/lensedCls.dat")
+      data = np.genfromtxt(self.data_dir+"/input/universe_Planck15/camb/lensedCls.dat")
       factor = self.fdl_to_cl(data[:,0])
       data[:,1] *= factor
       data[:,2] *= factor
@@ -99,9 +102,9 @@ class CMB(object):
 
       # TT
       if fg and not atm:
-         self.ftotalTT = lambda l: self.flensedTT(l) + self.fkSZ(l) + self.fCIB(l) + self.ftSZ(l) + self.ftSZ_CIB(l) + self.fradioPoisson(l) + self.fdetectorNoise(l)
+         self.ftotalTT = lambda l: self.flensedTT(l) + self.fkSZ(l) + self.fCIB(l) + self.ftSZ(l) + self.ftSZ_CIB(l) + self.fradioPoisson(l) + self.fdetectorNoise(l) + self.fgalacticDust(l) # fgalacticDust added by ABL, but it seems to have a negligible effect
       elif fg and atm:
-         self.ftotalTT = lambda l: self.flensedTT(l) + self.fkSZ(l) + self.fCIB(l) + self.ftSZ(l) + self.ftSZ_CIB(l) + self.fradioPoisson(l) + self.fdetectorNoise(l) + self.fatmosphericNoiseTT(l)
+         self.ftotalTT = lambda l: self.flensedTT(l) + self.fkSZ(l) + self.fCIB(l) + self.ftSZ(l) + self.ftSZ_CIB(l) + self.fradioPoisson(l) + self.fdetectorNoise(l) + self.fatmosphericNoiseTT_SOLAT(l) + self.fgalacticDust(l) # fgalacticDust added by ABL, but it seems to have a negligible effect. fatmosphericNoiseTT_SOLAT modified by ABL also
       elif not fg and not atm:
          self.ftotalTT = lambda l: self.flensedTT(l) + self.fdetectorNoise(l)
       elif not fg and atm:
@@ -123,7 +126,7 @@ class CMB(object):
       # Foreground power spectra
 
       # kSZ: Dunkley et al 2013
-      data = np.genfromtxt("./input/cmb/digitizing_SZ_template/kSZ.txt")   # read l, Dl
+      data = np.genfromtxt(self.data_dir+"/input/cmb/digitizing_SZ_template/kSZ.txt")   # read l, Dl
       data[:,1] *= self.fdl_to_cl(data[:,0]) # convert Dl to Cl
       fkSZ_template = interp1d(data[:,0], data[:,1], kind='linear', bounds_error=False, fill_value='extrapolate')
       a_kSZ = 1.5  # 1.5 predicted by Battaglia et al 2010. Upper limit from Dunkley+13 is 5.
@@ -131,7 +134,7 @@ class CMB(object):
       
 
       # tSZ: Dunkley et al 2013
-      data = np.genfromtxt("./input/cmb/digitizing_SZ_template/tSZ.txt")   # read l, Dl
+      data = np.genfromtxt(self.data_dir+"/input/cmb/digitizing_SZ_template/tSZ.txt")   # read l, Dl
       data[:,1] *= self.fdl_to_cl(data[:,0]) # convert Dl to Cl
       ftSZ_template = interp1d(data[:,0], data[:,1], kind='linear', bounds_error=False, fill_value='extrapolate')
       a_tSZ = 4.0
@@ -145,7 +148,7 @@ class CMB(object):
       betaC = 2.1
       Td = 9.7
       # watch for the minus sign
-      data = np.genfromtxt ("./input/cmb/digitizing_tSZCIB_template/minus_tSZ_CIB.txt")   # read l, Dl
+      data = np.genfromtxt (self.data_dir+"/input/cmb/digitizing_tSZCIB_template/minus_tSZ_CIB.txt")   # read l, Dl
       data[:,1] *= self.fdl_to_cl(data[:,0]) # convert Dl to Cl
       ftSZCIB_template = interp1d(data[:,0], data[:,1], kind='linear', bounds_error=False, fill_value='extrapolate')
       
@@ -200,7 +203,7 @@ class CMB(object):
       n_g = -0.7
       a_ge = 0.9
       a_gs = 0.7  # 95% confidence limit
-      result = a_gs * (l/3000.)**2 * self.fdl_to_cl(l)
+      result = a_gs * (l/3000.)**n_g * self.fdl_to_cl(l) # used to be square instead of n_g?
       result *= self.galacticDustFreqDpdceT(self.nu1) * self.galacticDustFreqDpdceT(self.nu2) / self.galacticDustFreqDpdceT(self.nu0)**2
       return result
 
@@ -243,6 +246,17 @@ class CMB(object):
       lKnee, alpha, _, _ = self.getAtmosphere()
       result = (lKnee/l)**(-alpha)
       result *= self.fdetectorNoise(l)
+      return result
+
+   def fatmosphericNoiseTT_SOLAT(self, l):
+      from scipy.interpolate import interp1d
+      '''By ABL. Params from the SO forecasting paper'''
+      lKnee = 1000.
+      alpha = - 3.5
+      # ABL: I've introduced an ad hoc factor of  2e-7 into N_red to match the SO paper
+      N_red_values_SOLAT_TT = interp1d(np.array([27e9, 39e9, 93e9, 145e9, 225e9, 280e9]), 2e-7*np.array([100, 39, 230, 1500, 17000, 31000]), bounds_error=False)
+      result = (l/lKnee)**(alpha)
+      result *= N_red_values_SOLAT_TT(self.nu1)
       return result
 
    def fatmosphericNoisePP(self, l):
@@ -889,7 +903,7 @@ cmb = CMB(beam=1.4, noise=7., nu1=143.e9, nu2=143.e9, lMin=1., lMaxT=3.e3, lMaxP
 
 class CIB(CMB):
    
-   def __init__(self, beam=1., noise=1., nu1=143.e9, nu2=143.e9, lMin=30., lMaxT=3.e3, lMaxP=5.e3, name=None):
+   def __init__(self, beam=1., noise=1., nu1=143.e9, nu2=143.e9, lMin=30., lMaxT=3.e3, lMaxP=5.e3, name=None, data_dir='/Users/antonbaleatolizancos/Software/BasicILC'):
       # name
       if name is None:
          self.name = "cib_nu"+str(int(nu1/1.e9))+"_nu"+str(int(nu2/1.e9))+"_beam"+str(round(beam, 3))+"_noise"+str(round(noise, 3))+"_lmin"+str(int(lMin))+"_lmaxT"+str(int(lMaxT))+"_lmaxP"+str(int(lMaxP))
@@ -906,6 +920,9 @@ class CIB(CMB):
       self.lMin = lMin
       self.lMaxT = lMaxT
       self.lMaxP = lMaxP
+
+      # By ABL
+      self.data_dir = data_dir
       
       super(CIB, self).__init__()
       
@@ -931,7 +948,7 @@ class CIB(CMB):
 
 class CIBPlanck15FitSimo(CMB):
    
-   def __init__(self, beam=5., noise=1., nu1=143.e9, nu2=143.e9, lMin=30., lMaxT=3.e3, lMaxP=5.e3):
+   def __init__(self, beam=5., noise=1., nu1=143.e9, nu2=143.e9, lMin=30., lMaxT=3.e3, lMaxP=5.e3, data_dir='/Users/antonbaleatolizancos/Software/BasicILC'):
       # name
       self.name = "cibplanckfit_nu"+str(int(nu1/1.e9))+"_nu"+str(int(nu2/1.e9))+"_beam"+str(round(beam, 3))+"_noise"+str(round(noise, 3))+"_lmin"+str(int(lMin))+"_lmaxT"+str(int(lMaxT))+"_lmaxP"+str(int(lMaxP))
       # frequencies in Hz (irrelevant)
@@ -945,6 +962,9 @@ class CIBPlanck15FitSimo(CMB):
       self.lMin = lMin
       self.lMaxT = lMaxT
       self.lMaxP = lMaxP
+
+      # By ABL
+      self.data_dir = data_dir
       
       super(CIB, self).__init__()
       
@@ -996,7 +1016,7 @@ class CIBPlanck15FitSimo(CMB):
 
 class CIBWuDore17(CMB):
    
-   def __init__(self, beam=1., noise=1., nu1=143.e9, nu2=143.e9, lMin=30., lMaxT=3.e3, lMaxP=5.e3):
+   def __init__(self, beam=1., noise=1., nu1=143.e9, nu2=143.e9, lMin=30., lMaxT=3.e3, lMaxP=5.e3, data_dir='/Users/antonbaleatolizancos/Software/BasicILC'):
       # name
       #      self.name = "cmbs4"
       self.name = "cib_wudore17_nu"+str(int(nu1/1.e9))+"_nu"+str(int(nu2/1.e9))+"_beam"+str(round(beam, 3))+"_noise"+str(round(noise, 3))+"_lmin"+str(int(lMin))+"_lmaxT"+str(int(lMaxT))+"_lmaxP"+str(int(lMaxP))
@@ -1011,6 +1031,9 @@ class CIBWuDore17(CMB):
       self.lMin = lMin
       self.lMaxT = lMaxT
       self.lMaxP = lMaxP
+
+      # By ABL
+      self.data_dir = data_dir
       
       super(CIBWuDore17, self).__init__()
       
@@ -1034,7 +1057,7 @@ class CIBWuDore17(CMB):
    def loadTabulatedCIB(self, nu1, nu2):
       # read the data file
       nu1, nu2 = np.sort([nu1, nu2])
-      path = "./input/cib_wu_dore_17/CL_1h2h_"+str(int(nu1/1.e9))+"x"+str(int(nu2/1.e9))+"_base.dat"
+      path = self.data_dir+"/input/cib_wu_dore_17/CL_1h2h_"+str(int(nu1/1.e9))+"x"+str(int(nu2/1.e9))+"_base.dat"
       data = np.genfromtxt(path)
       
       # interpolate the 1h, 2h and shot noise
@@ -1062,7 +1085,7 @@ class CIBWuDore17(CMB):
       
       # superimpose the data points to check
       nu1, nu2 = np.sort([self.nu1, self.nu2])
-      path = "./input/cib_wu_dore_17/CL_1h2h_"+str(int(nu1/1.e9))+"x"+str(int(nu2/1.e9))+"_base.dat"
+      path = self.data_dir+"/input/cib_wu_dore_17/CL_1h2h_"+str(int(nu1/1.e9))+"x"+str(int(nu2/1.e9))+"_base.dat"
       data = np.genfromtxt(path)
       
 
