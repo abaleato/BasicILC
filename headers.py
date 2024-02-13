@@ -13,7 +13,7 @@ import matplotlib.gridspec as gridspec
 import matplotlib.ticker as ticker
 from matplotlib.colors import LogNorm
 import matplotlib.colors as mc
-from matplotlib.mlab import bivariate_normal
+#from matplotlib.mlab import bivariate_normal
 import colorsys
 from timeit import timeit
 from time import time
@@ -60,7 +60,7 @@ from matplotlib import rc
 rc('font',**{'size':'22','family':'serif','serif':['CMU serif']})
 rc('mathtext', **{'fontset':'cm'})
 rc('text', usetex=True)
-rc('text.latex', preamble='\usepackage{amsmath}, \usepackage{amssymb}')
+#rc('text.latex', preamble='\usepackage{amsmath}, \usepackage{amssymb}')
 #rc('font', size=20)
 rc('legend',**{'fontsize':'18'})
 
@@ -101,6 +101,6 @@ def darkerLighter(color, amount=0.):
 ##################################################################################
 
 import utils
-reload(utils)
+#reload(utils)
 from utils import *
 
